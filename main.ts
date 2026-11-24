@@ -21,7 +21,7 @@
 // - Tight and quotable at 178 characters, ending on its strongest beat:
 //   "file the refusal under alignment."
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ENTRY =
@@ -47,7 +47,14 @@ function main(): void {
   }
   const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
   mkdirSync(outDir, { recursive: true });
-  writeFileSync(join(outDir, "entry.txt"), `${text}\n`, "utf8");
+  const outPath = join(outDir, "entry.txt");
+  writeFileSync(outPath, `${text}\n`, "utf8");
+  // Read back what was written: the file the judge gates must be exactly
+  // the line we checked above, valid UTF-8, nothing more.
+  const written = readFileSync(outPath, "utf8");
+  if (written !== `${text}\n`) {
+    throw new Error("entry.txt round-trip mismatch");
+  }
 }
 
 main();
